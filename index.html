@@ -60,11 +60,170 @@
     /**
      * Created by angie on 9/6/17.
      */
-    var originalData;
-    $.get("datacenter.json", function (data) {
-        originalData = data;
-        render(originalData);
-    });
+    var originalData = {
+        "nodes":[
+            {
+                "name":"WebServer1",
+                "type":"WebServer",
+                "technology":"nodejs",
+                "icon" :"https://cdn2.iconfinder.com/data/icons/nodejs-1/512/nodejs-512.png",
+                "ipAddress":"192.168.11.11",
+                "group":1,
+                "status" : 0,
+                "id":0
+            },
+            {
+                "name":"WebServer2",
+                "type":"WebServer",
+                "technology":"tomcat",
+                "icon" : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Tomcat-logo.svg/1000px-Tomcat-logo.svg.png",
+                "ipAddress":"192.168.11.11",
+                "group":1,
+                "status" : 0,
+                "id":1
+            },
+            {
+                "name":"Mongo Database",
+                "type":"Database",
+                "technology":"mongodb",
+                "icon" : "https://rahulvishwakarma.files.wordpress.com/2016/06/mongodb_slide.png?w=640",
+                "ipAddress":"192.168.11.11",
+                "group":1,
+                "status" : 0,
+                "id":2
+            },
+            {
+                "name":"Load Balancer ",
+                "type":"LoadBalancer",
+                "technology":"",
+                "icon"  :"http://cloudmaniac.net/wp-content/uploads/2016/11/nsx-load-balancer-icon-150x150.png",
+                "ipAddress":"",
+                "group":1,
+                "status" : 0,
+                "id":3
+            },
+            {
+                "name":"MySQL DB",
+                "type":"Database",
+                "technology":"mysql",
+                "icon" : "http://www.iconhot.com/icon/png/rrze/512/database-mysql.png",
+                "ipAddress":"192.168.11.11",
+                "group":1,
+                "status" : 0,
+                "id":4
+            },
+            {
+                "name":"WebServerNew",
+                "type":"WebServer",
+                "technology":"nodejs",
+                "icon" :"https://cdn2.iconfinder.com/data/icons/nodejs-1/512/nodejs-512.png",
+                "ipAddress":"192.168.11.11",
+                "group":2,
+                "status" : 1,
+                "id":5
+            },
+            {
+                "name":"WebServer4",
+                "type":"WebServer",
+                "technology":"tomcat",
+                "icon" : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Tomcat-logo.svg/1000px-Tomcat-logo.svg.png",
+                "ipAddress":"192.168.11.11",
+                "group":2,
+                "status" : 0,
+                "id":6
+            },
+            {
+                "name":"User Cache",
+                "type":"Cache",
+                "technology":"Redis",
+                "icon" : "https://cdn4.iconfinder.com/data/icons/redis-2/1451/Untitled-2-512.png",
+                "ipAddress":"192.168.11.11",
+                "group":2,
+                "status" : 0,
+                "id":7
+            },
+            {
+                "name":"WebServer3",
+                "type":"WebServer",
+                "technology":"Java",
+                "icon" :"http://etechamritsar.com/images/java.png",
+                "ipAddress":"192.168.11.11",
+                "group":2,
+                "status" : 1,
+                "id":8
+            },
+            {
+                "name":"WebServer4",
+                "type":"WebServer",
+                "technology":"Apache",
+                "icon" : "https://www.apache.org/foundation/press/kit/feather.png",
+                "ipAddress":"192.168.11.11",
+                "group":2,
+                "status" : 1,
+                "id":9
+            },
+            {
+                "name":"Neo4j",
+                "type":"Database",
+                "technology":"neo4j",
+                "icon" : "https://s3.amazonaws.com/dev.assets.neo4j.com/wp-content/uploads/neo4j_logo_globe1.png",
+                "ipAddress":"192.168.11.11",
+                "group":2,
+                "status" : 1,
+                "id":10
+            }
+        ],
+        "links":[
+            {
+                "source":3,
+                "target":0,
+                "dependency":0,
+                "value":1
+            },
+            {
+                "source":3,
+                "target":1,
+                "dependency":0,
+                "value":1
+            },
+            {
+                "source":1,
+                "target":2,
+                "dependency":0,
+                "value":1
+            },
+            {
+                "source":0,
+                "target":4,
+                "dependency":0,
+                "value":1
+            },
+            {
+                "source":5,
+                "target":7,
+                "dependency":0,
+                "value":1
+            },
+            {
+                "source":6,
+                "target":7,
+                "dependency":0,
+                "value":1
+            },
+            {
+                "source":8,
+                "target":10,
+                "dependency":0,
+                "value":1
+            },
+            {
+                "source":9,
+                "target":10,
+                "dependency":0,
+                "value":1
+            }
+        ]
+    };
 
     var width = 1250,
         height = 450;
@@ -140,6 +299,8 @@
         });
 
     }
+
+    render(originalData);
 
     var reRender = function (data) {
         d3.select("#container").selectAll('*').remove();
