@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.7.1/d3-tip.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+
+    .link {
+        stroke: lightblue;
+    }
+
+    .node text {
+        pointer-events: none;
+        font: 10px sans-serif;
+    }
+
+    .divider {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        height: 1px;
+        width: 100%;
+        border-top: 2px solid gray;
+    }
+
+    .content {
+        vertical-align: middle;
+        line-height: 60px;
+    }
+
+    .text {
+        text-align: center;
+    }
+
+</style>
+<body>
+<div class="content text">
+    <h1>
+        <small>Cloud Watch</small>
+    </h1>
+    <h2>
+        <small>Monitor services running accross data centers</small>
+    </h2>
+</div>
+<div class="divider"></div>
+
+<div class="searchcontainer">
+    <input id="search" onkeyup="searchListener();" placeholder="Filter">
+
+</div>
+
+<div id="container" class="svg-container content">
+</div>
+
+<script>
+    var originalData;
+    $.get("datacenter.json", function (data) {
+        originalData = data;
+        render(originalData);
+    });
+
+    var width = 1250,
+        height = 450;
+
+    var color = d3.scale.category10();
+
+    var force = d3.layout.force()
+        .gravity(0.05)
+        .distance(200)
+        .charge(-100)
+        .size([width, height]);
+
+    function render(json) {
+        var svg = d3.select("#container").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        force
+            .nodes(json.nodes)
+            .links(json.links)
+            .start();
+
+        var link = svg.selectAll(".link")
+            .data(json.links)
+            .enter().append("line")
+            .attr("class", "link")
+            .style('stroke-width', '1.8');
+
+
+        var node = svg.selectAll(".node")
+            .data(json.nodes)
+            .enter().append("g")
+            .attr("class", "node")
+            .style("fill", function (d) {
+                return color(d.group);
+            })
+            .call(force.drag);
+
+        node.append("image")
+            .attr("xlink:href", function (d) {
+                return d.icon;
+            })
+            .attr("x", "-12px")
+            .attr("y", "-12px")
+            .attr("width", "60px")
+            .attr("height", "60px");
+
+
+        node.append("text")
+            .attr("dx", 12)
+            .attr("dy", ".35em")
+            .text(function (d) {
+                return d.name
+            });
+
+        force.on("tick", function () {
+            link.attr("x1", function (d) {
+                return d.source.x;
+            })
+                .attr("y1", function (d) {
+                    return d.source.y;
+                })
+                .attr("x2", function (d) {
+                    return d.target.x;
+                })
+                .attr("y2", function (d) {
+                    return d.target.y;
+                });
+
+            node.attr("transform", function (d) {
+                return "translate(" + d.x + "," + d.y + ")";
+            });
+        });
+
+    }
+
+    var reRender = function (data) {
+        d3.select("#container").selectAll('*').remove();
+        render(data);
+    }
+
+    // Bind UI event handlers
+    var searchListener = function () {
+        console.log("search clicked");
+        var searchInput = $("#search").val();
+        var filteredJSON;
+        if (searchInput && searchInput != "") {
+            var filteredNodes = originalData.nodes.filter(function (node) {
+                return node.name.toLowerCase().match(searchInput.toLowerCase()) >= 0;
+            });
+
+            var nodeIds = [];
+            for (var i = 0; i < filteredNodes.length; i++) {
+                nodeIds.push(filteredNodes[i].id);
+            }
+
+            var filteredLinks = originalData.links.filter(function (link) {
+                return (nodeIds.indexOf(link.source.id) >= 0 && nodeIds.indexOf(link.target.id) >= 0 );
+            });
+
+            filteredJSON = {
+                nodes: filteredNodes,
+                links: filteredLinks
+            };
+
+        } else {
+            filteredJSON = originalData;
+        }
+
+
+        reRender(filteredJSON);
+
+    };
+
+</script>
+
+</body>
+</html>
+
+
