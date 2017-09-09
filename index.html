@@ -4,13 +4,12 @@
 <script src="https://d3js.org/d3.v3.min.js"></script>
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
-<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.7.1/d3-tip.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <style>
 
     .link {
         stroke: lightblue;
+        stroke-width: px;
     }
 
     .node text {
@@ -47,12 +46,18 @@
 </div>
 <div class="divider"></div>
 
-<div class="searchcontainer">
-    <input id="search" onkeyup="searchListener();" placeholder="Filter">
+<!--div class="searchcontainer">
+    <input id="search" onclick="" lick="searchNode();" placeholder="Filter">
 
-</div>
+</--div-->
+
+<div class="ui-widget">
+    <input id="search" placeholder="search by name">
+
+    <button type="button" onclick="searchNode();">Find</button>
 
 <div id="container" class="svg-container content">
+</div>
 </div>
 </body>
 
@@ -60,6 +65,7 @@
     /**
      * Created by angie on 9/6/17.
      */
+
     var originalData = {
         "nodes":[
             {
@@ -103,7 +109,7 @@
                 "id":3
             },
             {
-                "name":"MySQL DB",
+                "name":"MySQL DB1",
                 "type":"Database",
                 "technology":"mysql",
                 "icon" : "http://www.iconhot.com/icon/png/rrze/512/database-mysql.png",
@@ -230,115 +236,122 @@
 
     var color = d3.scale.category10();
 
+
     var force = d3.layout.force()
         .gravity(0.05)
         .distance(200)
         .charge(-100)
         .size([width, height]);
 
-    function render(json) {
-        var svg = d3.select("#container").append("svg")
-            .attr("width", width)
-            .attr("height", height);
+    var svg = d3.select("#container").append("svg")
+        .attr("width", width)
+        .attr("height", height);
 
-        force
-            .nodes(json.nodes)
-            .links(json.links)
-            .start();
+    force
+        .nodes(originalData.nodes)
+        .links(originalData.links)
+        .start();
 
-        var link = svg.selectAll(".link")
-            .data(json.links)
-            .enter().append("line")
-            .attr("class", "link")
-            .style('stroke-width', '1.8');
-
-
-        var node = svg.selectAll(".node")
-            .data(json.nodes)
-            .enter().append("g")
-            .attr("class", "node")
-            .style("fill", function (d) {
-                return color(d.group);
-            })
-            .call(force.drag);
-
-        node.append("image")
-            .attr("xlink:href", function (d) {
-                return d.icon;
-            })
-            .attr("x", "-12px")
-            .attr("y", "-12px")
-            .attr("width", "60px")
-            .attr("height", "60px");
+    var link = svg.selectAll(".link")
+        .data(originalData.links)
+        .enter().append("line")
+        .attr("class", "link")
+        .style('stroke-width', '1.8');
 
 
-        node.append("text")
-            .attr("dx", 12)
-            .attr("dy", ".35em")
-            .text(function (d) {
-                return d.name
-            });
+    var node = svg.selectAll(".node")
+        .data(originalData.nodes)
+        .enter().append("g")
+        .attr("class", "node")
+        .style("fill", function (d) {
+            return color(d.group);
+        })
+        .call(force.drag);
 
-        force.on("tick", function () {
-            link.attr("x1", function (d) {
-                return d.source.x;
-            })
-                .attr("y1", function (d) {
-                    return d.source.y;
-                })
-                .attr("x2", function (d) {
-                    return d.target.x;
-                })
-                .attr("y2", function (d) {
-                    return d.target.y;
-                });
+    node.append("image")
+        .attr("xlink:href", function (d) {
+            return d.icon;
+        })
+        .attr("x", "-12px")
+        .attr("y", "-12px")
+        .attr("width", "60px")
+        .attr("height", "60px");
 
-            node.attr("transform", function (d) {
-                return "translate(" + d.x + "," + d.y + ")";
-            });
+
+    node.append("text")
+        .attr("dx", 12)
+        .attr("dy", ".35em")
+        .text(function (d) {
+            return d.name
         });
 
-    }
-
-    render(originalData);
-
-    var reRender = function (data) {
-        d3.select("#container").selectAll('*').remove();
-        render(data);
-    };
-
-    // Bind UI event handlers
-    var searchListener = function () {
-        console.log("search clicked");
-        var searchInput = $("#search").val();
-        var filteredJSON;
-        if (searchInput && searchInput != "") {
-            var filteredNodes = originalData.nodes.filter(function (node) {
-                return node.name.toLowerCase().match(searchInput.toLowerCase()) >= 0;
+    force.on("tick", function () {
+        link.attr("x1", function (d) {
+            return d.source.x;
+        })
+            .attr("y1", function (d) {
+                return d.source.y;
+            })
+            .attr("x2", function (d) {
+                return d.target.x;
+            })
+            .attr("y2", function (d) {
+                return d.target.y;
             });
 
-            var nodeIds = [];
-            for (var i = 0; i < filteredNodes.length; i++) {
-                nodeIds.push(filteredNodes[i].id);
+        node.attr("transform", function (d) {
+            return "translate(" + d.x + "," + d.y + ")";
+        });
+    });
+
+
+
+    function searchNode() {
+
+        //First Show all the nodes
+        svg.selectAll(".node").each(show);
+        svg.selectAll(".link").each(show);
+
+        var selectedVal = document.getElementById('search').value;
+
+        if (selectedVal && selectedVal != "") {
+
+            var activeNodeIds = [];
+            for (var i = 0; i < originalData.nodes.length; i++) {
+                if (originalData.nodes[i].name.indexOf(selectedVal) >= 0) {
+                    activeNodeIds.push(originalData.nodes[i].id);
+                }
             }
 
-            var filteredLinks = originalData.links.filter(function (link) {
-                return (nodeIds.indexOf(link.source.id) >= 0 && nodeIds.indexOf(link.target.id) >= 0 );
-            });
+            //Now hide the filtered nodes and links
+            svg.selectAll(".node")
+                .filter(function (d) {
+                    return d.name.indexOf(selectedVal) < 0;
+                }).each(hide);
 
-            filteredJSON = {
-                nodes: filteredNodes,
-                links: filteredLinks
-            };
+            svg.selectAll(".link")
+                .filter(function (d) {
+                    return (activeNodeIds.indexOf(d.source.id) < 0 || activeNodeIds.indexOf(d.target.id) < 0 );
+                }).each(hide);
 
-        } else {
-            filteredJSON = originalData;
         }
-
-
-        reRender(filteredJSON);
     }
+
+
+
+    function hide(d) {
+        d3.select(this).style("opacity", 0);
+
+    }
+
+    function show(d) {
+        d3.select(this).style("opacity", 1);
+
+    }
+
 </script>
+
+
 
 </html>
 
